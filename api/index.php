@@ -1,11 +1,15 @@
 ﻿<?php
 
+/**
+ * Laravel Serverless Entry Point for Vercel
+ * Version: 2.0 - Bulletproof ViewService Fix
+ */
+
 define('LARAVEL_START', microtime(true));
 
-// Setup SSL Certificate for TiDB
+// === SSL CERT SETUP ===
 if (!file_exists('/tmp/isrgrootx1.pem')) {
-    $certContent = <<<'CERT'
------BEGIN CERTIFICATE-----
+    $cert = "-----BEGIN CERTIFICATE-----
 MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
 TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
 cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
@@ -35,45 +39,25 @@ oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq
 4RgqsahDYVvTH9w7jXbyLeiNdd8XM2w9U/t7y0Ff/9yi0GE44Za4rF2LN9d11TPA
 mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
 emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
------END CERTIFICATE-----
-CERT;
-    file_put_contents('/tmp/isrgrootx1.pem', $certContent);
+-----END CERTIFICATE-----";
+    file_put_contents('/tmp/isrgrootx1.pem', $cert);
     chmod('/tmp/isrgrootx1.pem', 0644);
 }
 
-// Create storage directories
-$dirs = [
-    '/tmp/storage',
-    '/tmp/storage/framework',
-    '/tmp/storage/framework/cache',
-    '/tmp/storage/framework/cache/data',
-    '/tmp/storage/framework/sessions',
-    '/tmp/storage/framework/views',
-    '/tmp/storage/logs',
-    '/tmp/bootstrap',
-    '/tmp/bootstrap/cache'
-];
+// === CREATE STORAGE STRUCTURE ===
+$dirs = ['/tmp/storage','/tmp/storage/app','/tmp/storage/app/public','/tmp/storage/framework','/tmp/storage/framework/cache','/tmp/storage/framework/cache/data','/tmp/storage/framework/sessions','/tmp/storage/framework/testing','/tmp/storage/framework/views','/tmp/storage/logs','/tmp/bootstrap','/tmp/bootstrap/cache'];
+foreach ($dirs as $dir) { if (!is_dir($dir)) { @mkdir($dir, 0755, true); @chmod($dir, 0755); } }
 
-foreach ($dirs as $dir) {
-    if (!is_dir($dir)) {
-        mkdir($dir, 0755, true);
-    }
-}
-
-// Register the Composer autoloader
+// === AUTOLOAD ===
 require __DIR__ . '/../vendor/autoload.php';
 
-// Bootstrap Laravel
+// === BOOTSTRAP APP ===
 $app = require_once __DIR__ . '/../bootstrap/app.php';
 
-// CRITICAL: Override storage path for serverless
+// === CRITICAL: SET STORAGE PATH ===
 $app->useStoragePath('/tmp/storage');
 
-// CRITICAL: Bind paths for serverless
-$app->bind('path.storage', fn() => '/tmp/storage');
-$app->bind('path.bootstrap', fn() => __DIR__ . '/../bootstrap');
-
-// Handle the request
+// === HANDLE REQUEST ===
 $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
 $response = $kernel->handle($request = Illuminate\Http\Request::capture());
 $response->send();
