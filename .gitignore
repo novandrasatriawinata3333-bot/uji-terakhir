@@ -24,3 +24,6 @@ Homestead.yaml
 Thumbs.db
 
 .vercel
+/bootstrap/cache/config.php
+/bootstrap/cache/packages.php
+/bootstrap/cache/services.php
