@@ -1,14 +1,16 @@
 ﻿<?php
 
-// ENABLE ALL ERRORS FOR DEBUGGING
+header('Content-Type: text/html; charset=UTF-8');
+
+// Enable error display
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
 
 define('LARAVEL_START', microtime(true));
 
 try {
-    // SSL Certificate
+    // Create SSL cert
     if (!file_exists('/tmp/isrgrootx1.pem')) {
         $cert = "-----BEGIN CERTIFICATE-----
 MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
@@ -45,23 +47,28 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
         chmod('/tmp/isrgrootx1.pem', 0644);
     }
     
-    // Storage directories
+    // Create storage dirs
     $dirs = ['/tmp/storage','/tmp/storage/framework','/tmp/storage/framework/cache','/tmp/storage/framework/cache/data','/tmp/storage/framework/sessions','/tmp/storage/framework/views','/tmp/storage/logs','/tmp/bootstrap','/tmp/bootstrap/cache'];
-    foreach ($dirs as $dir) { if (!is_dir($dir)) { @mkdir($dir, 0755, true); } }
+    foreach ($dirs as $dir) {
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+    }
     
-    // Autoload
+    // Check files exist
     if (!file_exists(__DIR__ . '/../vendor/autoload.php')) {
-        die("FATAL: vendor/autoload.php not found");
+        throw new Exception('vendor/autoload.php not found');
     }
-    require __DIR__ . '/../vendor/autoload.php';
     
-    // Bootstrap
     if (!file_exists(__DIR__ . '/../bootstrap/app.php')) {
-        die("FATAL: bootstrap/app.php not found");
+        throw new Exception('bootstrap/app.php not found');
     }
+    
+    // Load Laravel
+    require __DIR__ . '/../vendor/autoload.php';
     $app = require_once __DIR__ . '/../bootstrap/app.php';
     
-    // Set storage path
+    // Set paths
     $app->useStoragePath('/tmp/storage');
     
     // Handle request
@@ -71,12 +78,33 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     $kernel->terminate($request, $response);
     
 } catch (Throwable $e) {
-    // Display error
     http_response_code(500);
-    echo "<!DOCTYPE html><html><head><title>Error</title><style>body{font-family:monospace;padding:20px;background:#f5f5f5}pre{background:#fff;padding:20px;border:1px solid #ccc;overflow:auto}</style></head><body>";
-    echo "<h1>Laravel Bootstrap Error</h1>";
-    echo "<h2>" . htmlspecialchars($e->getMessage()) . "</h2>";
-    echo "<h3>File: " . htmlspecialchars($e->getFile()) . " (Line " . $e->getLine() . ")</h3>";
-    echo "<pre>" . htmlspecialchars($e->getTraceAsString()) . "</pre>";
-    echo "</body></html>";
+    ?>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Laravel Error</title>
+        <style>
+            body { font-family: Arial, sans-serif; padding: 40px; background: #f5f5f5; }
+            .error-box { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            h1 { color: #e74c3c; margin-top: 0; }
+            h2 { color: #333; }
+            pre { background: #f8f8f8; padding: 20px; border-radius: 4px; overflow-x: auto; }
+            .info { color: #666; font-size: 14px; }
+        </style>
+    </head>
+    <body>
+        <div class="error-box">
+            <h1>⚠️ Laravel Bootstrap Error</h1>
+            <h2><?php echo htmlspecialchars($e->getMessage()); ?></h2>
+            <p class="info">
+                <strong>File:</strong> <?php echo htmlspecialchars($e->getFile()); ?><br>
+                <strong>Line:</strong> <?php echo $e->getLine(); ?>
+            </p>
+            <h3>Stack Trace:</h3>
+            <pre><?php echo htmlspecialchars($e->getTraceAsString()); ?></pre>
+        </div>
+    </body>
+    </html>
+    <?php
 }

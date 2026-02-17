@@ -1,33 +1,33 @@
 ﻿<?php
-// Simple PHP test - no Laravel
-echo "<h1>PHP Test</h1>";
-echo "PHP Version: " . phpversion() . "<br>";
-echo "Server: " . $_SERVER['SERVER_SOFTWARE'] . "<br>";
-echo "Time: " . date('Y-m-d H:i:s') . "<br>";
+header('Content-Type: text/html; charset=UTF-8');
+echo "<h1>Laravel Test</h1>";
+echo "<pre>";
 
-// Test autoload
-if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
-    echo "✓ Vendor autoload exists<br>";
-    require __DIR__ . '/../vendor/autoload.php';
-    echo "✓ Autoload loaded<br>";
-} else {
-    echo "✗ Vendor autoload NOT FOUND<br>";
-    exit;
-}
+echo "1. PHP Version: " . phpversion() . "\n";
+echo "2. Current Dir: " . __DIR__ . "\n";
+echo "3. File exists check:\n";
+echo "   - vendor/autoload.php: " . (file_exists(__DIR__.'/../vendor/autoload.php') ? 'YES' : 'NO') . "\n";
+echo "   - bootstrap/app.php: " . (file_exists(__DIR__.'/../bootstrap/app.php') ? 'YES' : 'NO') . "\n";
+echo "   - resources/views: " . (is_dir(__DIR__.'/../resources/views') ? 'YES' : 'NO') . "\n";
 
-// Test bootstrap
-if (file_exists(__DIR__ . '/../bootstrap/app.php')) {
-    echo "✓ Bootstrap exists<br>";
-    try {
-        $app = require_once __DIR__ . '/../bootstrap/app.php';
-        echo "✓ Laravel bootstrapped<br>";
-        echo "App Class: " . get_class($app) . "<br>";
-    } catch (Exception $e) {
-        echo "✗ Bootstrap error: " . $e->getMessage() . "<br>";
-        echo "<pre>" . $e->getTraceAsString() . "</pre>";
+if (file_exists(__DIR__.'/../vendor/autoload.php')) {
+    require __DIR__.'/../vendor/autoload.php';
+    echo "\n4. Autoload: SUCCESS\n";
+    
+    if (file_exists(__DIR__.'/../bootstrap/app.php')) {
+        try {
+            $app = require __DIR__.'/../bootstrap/app.php';
+            echo "5. Laravel Bootstrap: SUCCESS\n";
+            echo "6. App class: " . get_class($app) . "\n";
+        } catch (Exception $e) {
+            echo "5. Laravel Bootstrap: FAILED\n";
+            echo "   Error: " . $e->getMessage() . "\n";
+        }
     }
-} else {
-    echo "✗ Bootstrap NOT FOUND<br>";
 }
 
-phpinfo();
+echo "\n7. Environment Variables:\n";
+echo "   APP_KEY: " . (getenv('APP_KEY') ? 'SET' : 'NOT SET') . "\n";
+echo "   APP_ENV: " . (getenv('APP_ENV') ?: 'NOT SET') . "\n";
+
+echo "</pre>";
