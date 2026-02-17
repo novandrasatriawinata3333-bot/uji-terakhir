@@ -1,18 +1,9 @@
-﻿<?php
-
-header('Content-Type: text/html; charset=UTF-8');
-
-// Enable error display
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-
+<?php
 define('LARAVEL_START', microtime(true));
 
-try {
-    // Create SSL cert
-    if (!file_exists('/tmp/isrgrootx1.pem')) {
-        $cert = "-----BEGIN CERTIFICATE-----
+// SSL Certificate
+if (!file_exists('/tmp/isrgrootx1.pem')) {
+    $cert = "-----BEGIN CERTIFICATE-----
 MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
 TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
 cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
@@ -43,35 +34,24 @@ oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq
 mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
 emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 -----END CERTIFICATE-----";
-        file_put_contents('/tmp/isrgrootx1.pem', $cert);
-        chmod('/tmp/isrgrootx1.pem', 0644);
+    file_put_contents('/tmp/isrgrootx1.pem', $cert);
+    chmod('/tmp/isrgrootx1.pem', 0644);
+}
+
+// Create storage directories
+$dirs = ['/tmp/storage','/tmp/storage/framework','/tmp/storage/framework/cache','/tmp/storage/framework/cache/data','/tmp/storage/framework/sessions','/tmp/storage/framework/views','/tmp/storage/logs','/tmp/bootstrap','/tmp/bootstrap/cache'];
+foreach ($dirs as $d) {
+    if (!is_dir($d)) {
+        @mkdir($d, 0755, true);
     }
-    
-    // Create storage dirs
-    $dirs = ['/tmp/storage','/tmp/storage/framework','/tmp/storage/framework/cache','/tmp/storage/framework/cache/data','/tmp/storage/framework/sessions','/tmp/storage/framework/views','/tmp/storage/logs','/tmp/bootstrap','/tmp/bootstrap/cache'];
-    foreach ($dirs as $dir) {
-        if (!is_dir($dir)) {
-            @mkdir($dir, 0755, true);
-        }
-    }
-    
-    // Check files exist
-    if (!file_exists(__DIR__ . '/../vendor/autoload.php')) {
-        throw new Exception('vendor/autoload.php not found');
-    }
-    
-    if (!file_exists(__DIR__ . '/../bootstrap/app.php')) {
-        throw new Exception('bootstrap/app.php not found');
-    }
-    
-    // Load Laravel
+}
+
+// Bootstrap Laravel
+try {
     require __DIR__ . '/../vendor/autoload.php';
     $app = require_once __DIR__ . '/../bootstrap/app.php';
-    
-    // Set paths
     $app->useStoragePath('/tmp/storage');
     
-    // Handle request
     $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
     $response = $kernel->handle($request = Illuminate\Http\Request::capture());
     $response->send();
@@ -79,32 +59,11 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
     
 } catch (Throwable $e) {
     http_response_code(500);
-    ?>
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Laravel Error</title>
-        <style>
-            body { font-family: Arial, sans-serif; padding: 40px; background: #f5f5f5; }
-            .error-box { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-            h1 { color: #e74c3c; margin-top: 0; }
-            h2 { color: #333; }
-            pre { background: #f8f8f8; padding: 20px; border-radius: 4px; overflow-x: auto; }
-            .info { color: #666; font-size: 14px; }
-        </style>
-    </head>
-    <body>
-        <div class="error-box">
-            <h1>⚠️ Laravel Bootstrap Error</h1>
-            <h2><?php echo htmlspecialchars($e->getMessage()); ?></h2>
-            <p class="info">
-                <strong>File:</strong> <?php echo htmlspecialchars($e->getFile()); ?><br>
-                <strong>Line:</strong> <?php echo $e->getLine(); ?>
-            </p>
-            <h3>Stack Trace:</h3>
-            <pre><?php echo htmlspecialchars($e->getTraceAsString()); ?></pre>
-        </div>
-    </body>
-    </html>
-    <?php
+    echo '<!DOCTYPE html><html><head><title>Error</title></head><body>';
+    echo '<h1>Laravel Error</h1>';
+    echo '<h2>' . htmlspecialchars($e->getMessage()) . '</h2>';
+    echo '<p><strong>File:</strong> ' . htmlspecialchars($e->getFile()) . '</p>';
+    echo '<p><strong>Line:</strong> ' . $e->getLine() . '</p>';
+    echo '<pre>' . htmlspecialchars($e->getTraceAsString()) . '</pre>';
+    echo '</body></html>';
 }
