@@ -43,5 +43,5 @@ $response->send();
 $kernel->terminate($request,$response);
 }catch(Throwable $e){
 http_response_code(500);
-echo'<!DOCTYPE html><html><head><title>Error</title></head><body><h1>Error</h1><h2>'.htmlspecialchars($e->getMessage()).'</h2><p>File: '.htmlspecialchars($e->getFile()).' Line: '.$e->getLine().'</p><pre>'.htmlspecialchars($e->getTraceAsString()).'</pre></body></html>';
+echo'<h1>Error</h1><h2>'.htmlspecialchars($e->getMessage()).'</h2><pre>'.htmlspecialchars($e->getTraceAsString()).'</pre>';
 }
