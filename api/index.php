@@ -1,15 +1,16 @@
 ﻿<?php
 
-/**
- * Laravel Serverless Entry Point for Vercel
- * Version: 2.0 - Bulletproof ViewService Fix
- */
+// ENABLE ALL ERRORS FOR DEBUGGING
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
 
 define('LARAVEL_START', microtime(true));
 
-// === SSL CERT SETUP ===
-if (!file_exists('/tmp/isrgrootx1.pem')) {
-    $cert = "-----BEGIN CERTIFICATE-----
+try {
+    // SSL Certificate
+    if (!file_exists('/tmp/isrgrootx1.pem')) {
+        $cert = "-----BEGIN CERTIFICATE-----
 MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
 TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
 cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
@@ -40,25 +41,42 @@ oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq
 mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
 emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 -----END CERTIFICATE-----";
-    file_put_contents('/tmp/isrgrootx1.pem', $cert);
-    chmod('/tmp/isrgrootx1.pem', 0644);
+        file_put_contents('/tmp/isrgrootx1.pem', $cert);
+        chmod('/tmp/isrgrootx1.pem', 0644);
+    }
+    
+    // Storage directories
+    $dirs = ['/tmp/storage','/tmp/storage/framework','/tmp/storage/framework/cache','/tmp/storage/framework/cache/data','/tmp/storage/framework/sessions','/tmp/storage/framework/views','/tmp/storage/logs','/tmp/bootstrap','/tmp/bootstrap/cache'];
+    foreach ($dirs as $dir) { if (!is_dir($dir)) { @mkdir($dir, 0755, true); } }
+    
+    // Autoload
+    if (!file_exists(__DIR__ . '/../vendor/autoload.php')) {
+        die("FATAL: vendor/autoload.php not found");
+    }
+    require __DIR__ . '/../vendor/autoload.php';
+    
+    // Bootstrap
+    if (!file_exists(__DIR__ . '/../bootstrap/app.php')) {
+        die("FATAL: bootstrap/app.php not found");
+    }
+    $app = require_once __DIR__ . '/../bootstrap/app.php';
+    
+    // Set storage path
+    $app->useStoragePath('/tmp/storage');
+    
+    // Handle request
+    $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+    $response = $kernel->handle($request = Illuminate\Http\Request::capture());
+    $response->send();
+    $kernel->terminate($request, $response);
+    
+} catch (Throwable $e) {
+    // Display error
+    http_response_code(500);
+    echo "<!DOCTYPE html><html><head><title>Error</title><style>body{font-family:monospace;padding:20px;background:#f5f5f5}pre{background:#fff;padding:20px;border:1px solid #ccc;overflow:auto}</style></head><body>";
+    echo "<h1>Laravel Bootstrap Error</h1>";
+    echo "<h2>" . htmlspecialchars($e->getMessage()) . "</h2>";
+    echo "<h3>File: " . htmlspecialchars($e->getFile()) . " (Line " . $e->getLine() . ")</h3>";
+    echo "<pre>" . htmlspecialchars($e->getTraceAsString()) . "</pre>";
+    echo "</body></html>";
 }
-
-// === CREATE STORAGE STRUCTURE ===
-$dirs = ['/tmp/storage','/tmp/storage/app','/tmp/storage/app/public','/tmp/storage/framework','/tmp/storage/framework/cache','/tmp/storage/framework/cache/data','/tmp/storage/framework/sessions','/tmp/storage/framework/testing','/tmp/storage/framework/views','/tmp/storage/logs','/tmp/bootstrap','/tmp/bootstrap/cache'];
-foreach ($dirs as $dir) { if (!is_dir($dir)) { @mkdir($dir, 0755, true); @chmod($dir, 0755); } }
-
-// === AUTOLOAD ===
-require __DIR__ . '/../vendor/autoload.php';
-
-// === BOOTSTRAP APP ===
-$app = require_once __DIR__ . '/../bootstrap/app.php';
-
-// === CRITICAL: SET STORAGE PATH ===
-$app->useStoragePath('/tmp/storage');
-
-// === HANDLE REQUEST ===
-$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
-$response = $kernel->handle($request = Illuminate\Http\Request::capture());
-$response->send();
-$kernel->terminate($request, $response);
