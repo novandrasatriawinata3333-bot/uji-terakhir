@@ -3,7 +3,7 @@ define('LARAVEL_START', microtime(true));
 if (!file_exists('/tmp/isrgrootx1.pem')) { $c="-----BEGIN CERTIFICATE-----
 MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
 TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
-cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
+chIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
 WhcNMzUwNjA0MTEwNDM4WjBPMQswCQYDVQQGEwJVUzEpMCcGA1UEChMgSW50ZXJu
 ZXQgU2VjdXJpdHkgUmVzZWFyY2ggR3JvdXAxFTATBgNVBAMTDElTUkcgUm9vdCBY
 MTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAK3oJHP0FDfzm54rVygc
@@ -33,4 +33,15 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 -----END CERTIFICATE-----";file_put_contents('/tmp/isrgrootx1.pem',$c);chmod('/tmp/isrgrootx1.pem',0644);}
 $d=['/tmp/storage','/tmp/storage/framework','/tmp/storage/framework/cache','/tmp/storage/framework/cache/data','/tmp/storage/framework/sessions','/tmp/storage/framework/views','/tmp/storage/logs','/tmp/bootstrap','/tmp/bootstrap/cache'];
 foreach($d as $v){if(!is_dir($v)){@mkdir($v,0755,true);}}
-try{require __DIR__.'/../vendor/autoload.php';$app=require_once __DIR__.'/../bootstrap/app.php';$app->useStoragePath('/tmp/storage');$kernel=$app->make(Illuminate\Contracts\Http\Kernel::class);$response=$kernel->handle($request=Illuminate\Http\Request::capture());$response->send();$kernel->terminate($request,$response);}catch(Throwable $e){http_response_code(500);echo'<h1>Error</h1><h2>'.htmlspecialchars($e->getMessage()).'</h2><pre>'.htmlspecialchars($e->getTraceAsString()).'</pre>';}
+try{
+require __DIR__.'/../vendor/autoload.php';
+$app=require_once __DIR__.'/../bootstrap/app.php';
+$app->useStoragePath('/tmp/storage');
+$kernel=$app->make(Illuminate\Contracts\Http\Kernel::class);
+$response=$kernel->handle($request=Illuminate\Http\Request::capture());
+$response->send();
+$kernel->terminate($request,$response);
+}catch(Throwable $e){
+http_response_code(500);
+echo'<!DOCTYPE html><html><head><title>Error</title></head><body><h1>Error</h1><h2>'.htmlspecialchars($e->getMessage()).'</h2><p>File: '.htmlspecialchars($e->getFile()).' Line: '.$e->getLine().'</p><pre>'.htmlspecialchars($e->getTraceAsString()).'</pre></body></html>';
+}
