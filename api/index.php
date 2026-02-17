@@ -1,9 +1,6 @@
 <?php
 define('LARAVEL_START', microtime(true));
-
-// SSL Certificate
-if (!file_exists('/tmp/isrgrootx1.pem')) {
-    $cert = "-----BEGIN CERTIFICATE-----
+if (!file_exists('/tmp/isrgrootx1.pem')) { $c="-----BEGIN CERTIFICATE-----
 MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
 TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
 cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
@@ -33,37 +30,7 @@ oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq
 4RgqsahDYVvTH9w7jXbyLeiNdd8XM2w9U/t7y0Ff/9yi0GE44Za4rF2LN9d11TPA
 mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
 emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
------END CERTIFICATE-----";
-    file_put_contents('/tmp/isrgrootx1.pem', $cert);
-    chmod('/tmp/isrgrootx1.pem', 0644);
-}
-
-// Create storage directories
-$dirs = ['/tmp/storage','/tmp/storage/framework','/tmp/storage/framework/cache','/tmp/storage/framework/cache/data','/tmp/storage/framework/sessions','/tmp/storage/framework/views','/tmp/storage/logs','/tmp/bootstrap','/tmp/bootstrap/cache'];
-foreach ($dirs as $d) {
-    if (!is_dir($d)) {
-        @mkdir($d, 0755, true);
-    }
-}
-
-// Bootstrap Laravel
-try {
-    require __DIR__ . '/../vendor/autoload.php';
-    $app = require_once __DIR__ . '/../bootstrap/app.php';
-    $app->useStoragePath('/tmp/storage');
-    
-    $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
-    $response = $kernel->handle($request = Illuminate\Http\Request::capture());
-    $response->send();
-    $kernel->terminate($request, $response);
-    
-} catch (Throwable $e) {
-    http_response_code(500);
-    echo '<!DOCTYPE html><html><head><title>Error</title></head><body>';
-    echo '<h1>Laravel Error</h1>';
-    echo '<h2>' . htmlspecialchars($e->getMessage()) . '</h2>';
-    echo '<p><strong>File:</strong> ' . htmlspecialchars($e->getFile()) . '</p>';
-    echo '<p><strong>Line:</strong> ' . $e->getLine() . '</p>';
-    echo '<pre>' . htmlspecialchars($e->getTraceAsString()) . '</pre>';
-    echo '</body></html>';
-}
+-----END CERTIFICATE-----";file_put_contents('/tmp/isrgrootx1.pem',$c);chmod('/tmp/isrgrootx1.pem',0644);}
+$d=['/tmp/storage','/tmp/storage/framework','/tmp/storage/framework/cache','/tmp/storage/framework/cache/data','/tmp/storage/framework/sessions','/tmp/storage/framework/views','/tmp/storage/logs','/tmp/bootstrap','/tmp/bootstrap/cache'];
+foreach($d as $v){if(!is_dir($v)){@mkdir($v,0755,true);}}
+try{require __DIR__.'/../vendor/autoload.php';$app=require_once __DIR__.'/../bootstrap/app.php';$app->useStoragePath('/tmp/storage');$kernel=$app->make(Illuminate\Contracts\Http\Kernel::class);$response=$kernel->handle($request=Illuminate\Http\Request::capture());$response->send();$kernel->terminate($request,$response);}catch(Throwable $e){http_response_code(500);echo'<h1>Error</h1><h2>'.htmlspecialchars($e->getMessage()).'</h2><pre>'.htmlspecialchars($e->getTraceAsString()).'</pre>';}
