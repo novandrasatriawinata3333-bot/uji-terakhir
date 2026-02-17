@@ -27,3 +27,7 @@ Thumbs.db
 /bootstrap/cache/config.php
 /bootstrap/cache/packages.php
 /bootstrap/cache/services.php
+
+/bootstrap/cache/config.php
+/bootstrap/cache/packages.php
+/bootstrap/cache/services.php
