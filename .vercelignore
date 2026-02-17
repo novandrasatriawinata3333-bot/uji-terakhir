@@ -1,7 +1,8 @@
 /vendor
 /node_modules
-.env
-.env.*
-.git
-storage/*.key
+/.env
+/.env.*
+/.git
+/storage/*.key
 .phpunit.result.cache
+/database/database.sqlite
